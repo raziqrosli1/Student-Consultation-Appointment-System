@@ -1,0 +1,15 @@
+# Database configuration
+config.php
+
+# XAMPP / local files
+*.log
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# VS Code
+.vscode/
+
+# PHP temporary files
+*.tmp
