@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_execute($staffCheck);
         mysqli_stmt_store_result($staffCheck);
         $staffValid = (mysqli_stmt_num_rows($staffCheck) > 0);
+        mysqli_stmt_close($staffCheck);
     }
 
     // Server-side validation
@@ -57,12 +58,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $message = "Something went wrong. Please try again.";
             }
+
+            mysqli_stmt_close($insert);
         }
+
+        mysqli_stmt_close($check);
     }
 }
 
 // Get staff list for dropdown
-$staffList = mysqli_query($conn, "SELECT id, name FROM users WHERE role = 'staff' ORDER BY name");
+$staffStmt = mysqli_prepare($conn, "SELECT id, name FROM users WHERE role = 'staff' ORDER BY name");
+mysqli_stmt_execute($staffStmt);
+$staffList = mysqli_stmt_get_result($staffStmt);
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -114,4 +121,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php
+mysqli_stmt_close($staffStmt);
+include __DIR__ . '/../includes/footer.php';
+?>

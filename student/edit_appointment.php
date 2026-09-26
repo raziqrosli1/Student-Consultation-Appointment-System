@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_execute($staffCheck);
         mysqli_stmt_store_result($staffCheck);
         $staffValid = (mysqli_stmt_num_rows($staffCheck) > 0);
+        mysqli_stmt_close($staffCheck);
     }
 
     // Server-side validation
@@ -61,7 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_bind_param($update, "isssii", $staff_id, $date, $time, $purpose, $id, $student_id);
             mysqli_stmt_execute($update);
             $message = "Appointment successfully updated.";
+            mysqli_stmt_close($update);
         }
+
+        mysqli_stmt_close($check);
     }
 }
 
@@ -71,6 +75,7 @@ mysqli_stmt_bind_param($stmt, "ii", $id, $student_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $appt = mysqli_fetch_assoc($result);
+mysqli_stmt_close($stmt);
 
 // If not found or not owned, go back
 if (!$appt) {
@@ -79,7 +84,9 @@ if (!$appt) {
 }
 
 // Get staff list for dropdown
-$staffList = mysqli_query($conn, "SELECT id, name FROM users WHERE role = 'staff' ORDER BY name");
+$staffStmt = mysqli_prepare($conn, "SELECT id, name FROM users WHERE role = 'staff' ORDER BY name");
+mysqli_stmt_execute($staffStmt);
+$staffList = mysqli_stmt_get_result($staffStmt);
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -97,10 +104,11 @@ include __DIR__ . '/../includes/header.php';
     <div class="card-body">
         <form method="POST" action="edit_appointment.php" onsubmit="return validateAppointment(this);">
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
+
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Staff</label>
-                    <select name="staff_id" id="staff_id" class="form-select">
+                    <select name="staff_id" id="staff_id" class="form-select" onchange="checkSlot();">
                         <option value="">-- Select Staff --</option>
                         <?php while ($staff = mysqli_fetch_assoc($staffList)): ?>
                             <option value="<?php echo $staff['id']; ?>" <?php echo ($staff['id'] == $appt['staff_id']) ? 'selected' : ''; ?>>
@@ -109,14 +117,17 @@ include __DIR__ . '/../includes/header.php';
                         <?php endwhile; ?>
                     </select>
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Date</label>
-                    <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?php echo htmlspecialchars($appt['appointment_date']); ?>">
+                    <input type="date" name="appointment_date" id="appointment_date" class="form-control" value="<?php echo htmlspecialchars($appt['appointment_date']); ?>" onchange="checkSlot();">
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Time</label>
-                    <input type="time" name="appointment_time" id="appointment_time" class="form-control" value="<?php echo htmlspecialchars($appt['appointment_time']); ?>">
+                    <input type="time" name="appointment_time" id="appointment_time" class="form-control" value="<?php echo htmlspecialchars($appt['appointment_time']); ?>" onchange="checkSlot();">
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Purpose</label>
                     <input type="text" name="purpose" id="purpose" class="form-control" value="<?php echo htmlspecialchars($appt['purpose']); ?>">
@@ -133,4 +144,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php
+mysqli_stmt_close($staffStmt);
+include __DIR__ . '/../includes/footer.php';
+?>

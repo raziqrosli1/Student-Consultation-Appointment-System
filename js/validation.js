@@ -16,10 +16,12 @@ function validateRegister(form) {
         alert("Please fill in all required fields.");
         return false;
     }
+
     if (!isValidEmail(email)) {
         alert("Invalid email format.");
         return false;
     }
+
     return true;
 }
 
@@ -32,10 +34,12 @@ function validateLogin(form) {
         alert("Please fill in all required fields.");
         return false;
     }
+
     if (!isValidEmail(email)) {
         alert("Invalid email format.");
         return false;
     }
+
     return true;
 }
 
@@ -50,6 +54,7 @@ function validateAppointment(form) {
         alert("Please fill in all required fields.");
         return false;
     }
+
     return true;
 }
 
