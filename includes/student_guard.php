@@ -13,3 +13,4 @@ if ($_SESSION['role'] !== 'student') {
     header("Location: " . $base_url . "staff/staff_dashboard.php");
     exit;
 }
+
